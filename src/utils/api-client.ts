@@ -101,9 +101,7 @@ export function buildLoungeUrl({
   nofocus?: boolean;
 }): string {
   const params = new URLSearchParams({
-    autologin: 'true',
-    user: ircUsername,
-    'al-password': ircPassword,
+    password: ircPassword,
     autoconnect: 'true',
     nick: userNick,
     username: `${ircUsername}/${networkName}`,
