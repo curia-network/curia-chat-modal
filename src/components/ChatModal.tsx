@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { MessageSquare, X } from 'lucide-react';
+import { MessageSquare, X, Loader } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { Button } from './Button';
-import type { ChatModalProps } from '../types';
+import { provisionIrcUser, buildLoungeUrl } from '../utils/api-client';
+import type { ChatModalProps, ChatModalState } from '../types';
 
 // Hook to detect desktop (reuse from GlobalSearchModal pattern)
 const useIsDesktop = () => {
@@ -28,21 +29,76 @@ export function ChatModal({
   user, 
   community, 
   theme = 'light', 
-  chatBaseUrl, 
+  chatBaseUrl,
+  curiaBaseUrl,
+  authToken,
   onClose 
 }: ChatModalProps) {
   const isDesktop = useIsDesktop();
+  const [modalState, setModalState] = useState<ChatModalState>({ status: 'loading' });
+  const isProvisioningRef = useRef(false);
 
-  // Construct The Lounge URL with community-specific channel
+  // Provision IRC user and construct The Lounge URL
+  useEffect(() => {
+    const setupIrcUser = async () => {
+      try {
+        // Prevent duplicate API calls in React Strict Mode
+        if (isProvisioningRef.current) {
+          console.log('[ChatModal] Already provisioning, skipping...');
+          return;
+        }
+        isProvisioningRef.current = true;
+        
+        setModalState({ status: 'loading' });
+
+        // Call our IRC provisioning endpoint  
+        const credentials = await provisionIrcUser(chatBaseUrl, authToken, curiaBaseUrl);
+
+        console.log('[ChatModal] IRC user provisioned successfully');
+        setModalState({ 
+          status: 'ready', 
+          credentials 
+        });
+
+      } catch (error) {
+        console.error('[ChatModal] Setup error:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Failed to setup IRC user';
+        setModalState({ 
+          status: 'error', 
+          error: errorMessage 
+        });
+      } finally {
+        isProvisioningRef.current = false;
+      }
+    };
+
+    setupIrcUser();
+  }, []);
+
   const getChatUrl = () => {
+    if (modalState.status !== 'ready' || !modalState.credentials) {
+      return null;
+    }
+
     const baseUrl = chatBaseUrl || 'https://chat.curia.network';
     
     // Create a safe channel name from community name
     const channelName = community.name.toLowerCase().replace(/[^a-z0-9]/g, '-');
-    const userNick = `${user.name.replace(/[^a-zA-Z0-9]/g, '')}${user.id.slice(-4)}`;
     
-    return `${baseUrl}?autoconnect&nick=${userNick}&join=%23${channelName}&lockchannel&nofocus`;
+    // 🚀 DYNAMIC AUTO-LOGIN: Using provisioned IRC credentials
+    return buildLoungeUrl({
+      baseUrl,
+      ircUsername: modalState.credentials.ircUsername,
+      ircPassword: modalState.credentials.ircPassword,
+      networkName: modalState.credentials.networkName,
+      userNick: modalState.credentials.ircUsername, // Use ircUsername for nick consistency
+      channelName,
+      nofocus: true
+    });
   };
+
+  // Cache the chat URL to prevent multiple buildLoungeUrl calls
+  const chatUrl = getChatUrl();
 
   // Body scroll lock and focus management when modal is open
   useEffect(() => {
@@ -127,15 +183,62 @@ export function ChatModal({
           </div>
         </div>
 
-        {/* Chat Content Area - The Lounge iframe */}
+        {/* Chat Content Area - Dynamic based on modal state */}
         <div className="flex-1 overflow-hidden">
-          <iframe
-            src={getChatUrl()}
-            className="w-full h-full border-0"
-            title={`Chat for ${community.name}`}
-            allow="camera; microphone; fullscreen"
-            sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
-          />
+          {modalState.status === 'loading' && (
+            <div className="flex flex-col items-center justify-center h-full p-8 text-center">
+              <Loader className="w-8 h-8 animate-spin text-primary mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Setting up your chat...</h3>
+              <p className="text-sm text-muted-foreground">
+                Connecting you to {community.name} chat room
+              </p>
+            </div>
+          )}
+
+          {modalState.status === 'error' && (
+            <div className="flex flex-col items-center justify-center h-full p-8 text-center">
+              <div className="w-12 h-12 rounded-full bg-destructive/10 text-destructive flex items-center justify-center mb-4">
+                <X size={24} />
+              </div>
+              <h3 className="text-lg font-semibold mb-2 text-destructive">Chat unavailable</h3>
+              <p className="text-sm text-muted-foreground mb-4 max-w-sm">
+                {modalState.error || 'Failed to connect to chat. Please try again later.'}
+              </p>
+              <Button 
+                onClick={() => window.location.reload()} 
+                variant="default" 
+                size="sm"
+              >
+                Try again
+              </Button>
+            </div>
+          )}
+
+          {modalState.status === 'ready' && chatUrl && (
+            <iframe
+              src={chatUrl}
+              className="w-full h-full border-0"
+              title={`Chat for ${community.name}`}
+              allow="camera; microphone; fullscreen"
+              sandbox="allow-same-origin allow-scripts allow-forms allow-popups"
+              onLoad={() => console.log('[ChatModal] Iframe loaded successfully')}
+              onError={(e) => console.error('[ChatModal] Iframe load error:', e)}
+            />
+          )}
+
+          {modalState.status === 'ready' && !chatUrl && (
+            <div className="flex flex-col items-center justify-center h-full p-6">
+              <div className="text-center space-y-4">
+                <h3 className="text-lg font-semibold text-destructive">⚠️ Chat URL Generation Failed</h3>
+                <p className="text-muted-foreground">
+                  Unable to construct The Lounge URL. Please try again or contact support.
+                </p>
+                <Button onClick={() => window.location.reload()} variant="default">
+                  Refresh Page
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </>,
