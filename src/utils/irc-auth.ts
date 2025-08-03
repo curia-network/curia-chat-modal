@@ -7,8 +7,9 @@ import bcrypt from 'bcryptjs';
  * @returns Clean IRC username with unique suffix
  */
 export function generateIrcUsername(name: string, userId: string): string {
-  // Clean name: remove non-alphanumeric characters and convert to lowercase
-  const cleanName = name.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+  // Clean name: convert IRC-prohibited characters to underscores (preserve structure)
+  // IRC RFC 2812 prohibits: spaces, @, and control characters
+  const cleanName = name.replace(/[\s@\x00-\x1F\x7F]/g, '_').toLowerCase();
   
   // Use last 4 characters of user ID as unique suffix
   const userSuffix = userId.slice(-4);
