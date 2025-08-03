@@ -24,6 +24,7 @@ export { provisionIrcUser, buildLoungeUrl } from './utils/api-client';
 // IRC Authentication Utilities
 export { 
   generateIrcUsername, 
+  generateIrcNickname,
   generateSecurePassword, 
   hashIrcPassword,
   verifyIrcPassword,
