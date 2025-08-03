@@ -9,10 +9,42 @@ import bcrypt from 'bcryptjs';
 export function generateIrcUsername(name: string, userId: string): string {
   // Clean name: convert IRC-prohibited characters to underscores (preserve structure)
   // IRC RFC 2812 prohibits: spaces, @, and control characters
-  const cleanName = name.replace(/[\s@\x00-\x1F\x7F]/g, '_').toLowerCase();
+  const cleanName = name.trim().replace(/[\s@\x00-\x1F\x7F]/g, '_').toLowerCase();
   
   // Return cleaned name as-is - collision handling is NOT this function's job
   return cleanName.slice(0, 32);
+}
+
+/**
+ * Generate IRC-compliant nickname from a user's display name
+ * Nicknames are more restrictive than usernames - no dots, commas, colons, etc.
+ * @param name User's display name
+ * @returns Clean IRC nickname (RFC 2812 compliant, safe characters only)
+ */
+export function generateIrcNickname(name: string): string {
+  // IRC Nickname rules (RFC 2812):
+  // - Allowed: A-Z, a-z, 0-9, [, ], \, `, _, ^, {, |, }, -
+  // - Cannot start with: numbers or hyphens
+  // - Length: traditionally 9 chars, modern servers allow more
+  
+  const cleanName = name.trim().toLowerCase();
+  
+  // Replace forbidden characters with underscores
+  // Keep only: letters, numbers, and special IRC nickname chars
+  let nickname = cleanName.replace(/[^a-z0-9\[\]\\`_^{|}]/g, '_');
+  
+  // Ensure it starts with a letter or allowed special char (not number/hyphen)
+  if (nickname.length > 0 && /^[0-9\-]/.test(nickname)) {
+    nickname = 'u_' + nickname;
+  }
+  
+  // Ensure minimum length
+  if (nickname.length === 0) {
+    nickname = 'user';
+  }
+  
+  // Limit to 32 characters (generous for modern servers)
+  return nickname.slice(0, 32);
 }
 
 /**
@@ -59,6 +91,7 @@ export async function verifyIrcPassword(password: string, hash: string): Promise
  */
 export interface IrcProvisioningUtils {
   generateIrcUsername: typeof generateIrcUsername;
+  generateIrcNickname: typeof generateIrcNickname;
   generateSecurePassword: typeof generateSecurePassword;
   hashIrcPassword: typeof hashIrcPassword;
   verifyIrcPassword: typeof verifyIrcPassword;
