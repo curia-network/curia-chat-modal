@@ -1,22 +1,18 @@
 import bcrypt from 'bcryptjs';
 
 /**
- * Generate a unique IRC username from a user's name and ID
+ * Generate IRC-compliant username from a user's display name
  * @param name User's display name
- * @param userId User's unique ID
- * @returns Clean IRC username with unique suffix
+ * @param userId User's unique ID (unused for now, kept for future flexibility)
+ * @returns Clean IRC username (forbidden characters replaced with underscores)
  */
 export function generateIrcUsername(name: string, userId: string): string {
   // Clean name: convert IRC-prohibited characters to underscores (preserve structure)
   // IRC RFC 2812 prohibits: spaces, @, and control characters
   const cleanName = name.replace(/[\s@\x00-\x1F\x7F]/g, '_').toLowerCase();
   
-  // Use last 4 characters of user ID as unique suffix
-  const userSuffix = userId.slice(-4);
-  
-  // Combine and ensure it fits IRC username limits (typically 32 chars)
-  const username = `${cleanName}_${userSuffix}`;
-  return username.slice(0, 32);
+  // Return cleaned name as-is - collision handling is NOT this function's job
+  return cleanName.slice(0, 32);
 }
 
 /**
