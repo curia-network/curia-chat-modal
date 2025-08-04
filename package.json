@@ -1,6 +1,6 @@
 {
   "name": "@curia_/curia-chat-modal",
-  "version": "1.5.2",
+  "version": "1.5.4",
   "description": "Chat modal package for embedding The Lounge IRC client in Curia forum",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

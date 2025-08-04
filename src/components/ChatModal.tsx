@@ -148,8 +148,8 @@ export function ChatModal({
           "fixed z-50 bg-background shadow-2xl border overscroll-contain flex flex-col focus:outline-none",
           theme === 'dark' ? 'dark' : '',
           isDesktop
-            ? // Desktop: Responsive sidebar (45% with constraints)
-              "left-0 top-0 bottom-0 w-[45%] min-w-[32rem] max-w-[54rem] rounded-r-2xl animate-in slide-in-from-left-5 fade-in-0 duration-300"
+            ? // Desktop: Responsive sidebar (50% with constraints)  
+              "left-0 top-0 bottom-0 w-1/2 min-w-[32rem] max-w-[54rem] rounded-r-2xl animate-in slide-in-from-left-5 fade-in-0 duration-300"
             : // Mobile: Full screen chat app
               "inset-0 h-[100dvh] animate-in slide-in-from-bottom-4 fade-in-0 duration-300"
         )}
