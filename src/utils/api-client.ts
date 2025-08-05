@@ -90,7 +90,8 @@ export function buildLoungeUrl({
   networkName,
   userNick,
   channelName,
-  nofocus = true
+  nofocus = true,
+  theme
 }: {
   baseUrl: string;
   ircUsername: string;
@@ -99,6 +100,7 @@ export function buildLoungeUrl({
   userNick: string;
   channelName: string;
   nofocus?: boolean;
+  theme?: 'light' | 'dark';
 }): string {
   const params = new URLSearchParams({
     password: ircPassword,
@@ -108,12 +110,13 @@ export function buildLoungeUrl({
     realname: userNick,
     join: `#${channelName}`,
     lockchannel: 'true',
-    ...(nofocus && { nofocus: 'true' })
+    ...(nofocus && { nofocus: 'true' }),
+    ...(theme && { theme })
   });
 
   const finalUrl = `${baseUrl}?${params.toString()}`;
   
-  console.log('[Chat Modal] Built Lounge URL for user:', ircUsername);
+  console.log('[Chat Modal] Built Lounge URL for user:', ircUsername, theme ? `with theme: ${theme}` : '');
 
   return finalUrl;
 }

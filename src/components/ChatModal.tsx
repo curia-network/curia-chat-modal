@@ -93,7 +93,8 @@ export function ChatModal({
       networkName: modalState.credentials.networkName,
       userNick: modalState.credentials.ircUsername, // Use ircUsername for nick consistency
       channelName,
-      nofocus: true
+      nofocus: true,
+      theme // Pass theme prop through to IRC client
     });
   };
 
