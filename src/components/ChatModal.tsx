@@ -2,11 +2,11 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { MessageSquare, X, Loader } from 'lucide-react';
+import { Loader } from 'lucide-react';
 import { cn } from '../utils/cn';
-import { Button } from './Button';
 import { provisionIrcUser, buildLoungeUrl } from '../utils/api-client';
 import type { ChatModalProps, ChatModalState } from '../types';
+import styles from '../styles/ChatModal.module.css';
 
 // Hook to detect desktop (reuse from GlobalSearchModal pattern)
 const useIsDesktop = () => {
@@ -148,42 +148,19 @@ export function ChatModal({
         className={cn(
           "fixed z-50 bg-background shadow-2xl border overscroll-contain flex flex-col focus:outline-none",
           theme === 'dark' ? 'dark' : '',
+          // Responsive sizing via CSS module (no more Tailwind compilation issues!)
+          styles.modalResponsive,
           isDesktop
-            ? // Desktop: Responsive sidebar (50% with constraints)  
-              "left-0 top-0 bottom-0 w-1/2 min-w-[32rem] max-w-[54rem] rounded-r-2xl animate-in slide-in-from-left-5 fade-in-0 duration-300"
-            : // Mobile: Full screen chat app
-              "inset-0 h-[100dvh] animate-in slide-in-from-bottom-4 fade-in-0 duration-300"
+            ? // Desktop: Animation and border radius
+              "rounded-r-2xl animate-in slide-in-from-left-5 fade-in-0 duration-300"
+            : // Mobile: Animation only
+              "animate-in slide-in-from-bottom-4 fade-in-0 duration-300"
         )}
         role="dialog"
         aria-modal="true"
-        aria-labelledby="chat-title"
+        aria-label="Chat modal"
         tabIndex={-1}
       >
-        {/* Header */}
-        <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-md border-b border-primary/10 p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-primary/10 text-primary">
-                <MessageSquare size={18} />
-              </div>
-              <div>
-                <h2 id="chat-title" className="text-lg font-semibold">Chat</h2>
-                <p className="text-sm text-muted-foreground">#{community.name}</p>
-              </div>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-              className="h-8 w-8 p-0 hover:bg-muted rounded-full"
-              aria-label="Close chat"
-            >
-              <X size={16} />
-              <span className="sr-only">Close chat</span>
-            </Button>
-          </div>
-        </div>
-
         {/* Chat Content Area - Dynamic based on modal state */}
         <div className="flex-1 overflow-hidden">
           {modalState.status === 'loading' && (
@@ -198,20 +175,19 @@ export function ChatModal({
 
           {modalState.status === 'error' && (
             <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-              <div className="w-12 h-12 rounded-full bg-destructive/10 text-destructive flex items-center justify-center mb-4">
-                <X size={24} />
+              <div className="w-12 h-12 rounded-full bg-destructive/10 text-destructive flex items-center justify-center mb-4 text-2xl">
+                ⚠️
               </div>
               <h3 className="text-lg font-semibold mb-2 text-destructive">Chat unavailable</h3>
               <p className="text-sm text-muted-foreground mb-4 max-w-sm">
                 {modalState.error || 'Failed to connect to chat. Please try again later.'}
               </p>
-              <Button 
+              <button 
                 onClick={() => window.location.reload()} 
-                variant="default" 
-                size="sm"
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 text-sm"
               >
                 Try again
-              </Button>
+              </button>
             </div>
           )}
 
@@ -234,9 +210,12 @@ export function ChatModal({
                 <p className="text-muted-foreground">
                   Unable to construct The Lounge URL. Please try again or contact support.
                 </p>
-                <Button onClick={() => window.location.reload()} variant="default">
+                <button 
+                  onClick={() => window.location.reload()} 
+                  className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+                >
                   Refresh Page
-                </Button>
+                </button>
               </div>
             </div>
           )}

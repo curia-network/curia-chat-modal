@@ -1,0 +1,46 @@
+/* ChatModal CSS Module - Responsive Sizing System */
+
+/* Mobile: Full screen chat experience */
+.modalMobile {
+  /* Full screen positioning */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  /* Full viewport height */
+  height: 100dvh;
+}
+
+/* Desktop: Fixed sidebar width */
+.modalDesktop {
+  /* Sidebar positioning */
+  top: 0;
+  left: 0;
+  bottom: 0;
+  /* Fixed width - our reliable 25rem */
+  width: 25rem;
+}
+
+/* Responsive breakpoint - orientation-aware for better tablet experience */
+
+/* Full screen: Portrait mode phones and small tablets */
+@media (max-width: 768px) and (orientation: portrait) {
+  .modalResponsive {
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 100dvh;
+  }
+}
+
+/* Sidebar: Landscape tablets and all larger devices */
+@media (min-width: 769px), 
+       (min-width: 768px) and (orientation: landscape) {
+  .modalResponsive {
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 25rem;
+  }
+}
