@@ -14,12 +14,14 @@ export type {
   ChatModalProps, 
   ChatContextType,
   IrcCredentials,
-  ChatModalState
+  ApiChatChannel,
+  ChatChannelSettings
 } from './types';
 
 // Utils (in case consumers need them)
 export { cn } from './utils/cn';
-export { provisionIrcUser, buildLoungeUrl } from './utils/api-client';
+export { buildLoungeUrl } from './utils/api-client';
+// NOTE: provisionIrcUser moved to curia app for better architecture
 
 // IRC Authentication Utilities
 export { 
