@@ -12,6 +12,7 @@ export interface ChatModalProps {
   user: ChatUser;
   community: ChatCommunity;
   theme?: 'light' | 'dark';
+  mode?: 'normal' | 'single';
   chatBaseUrl?: string;
   curiaBaseUrl?: string;
   authToken?: string | null;

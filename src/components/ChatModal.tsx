@@ -28,7 +28,8 @@ const useIsDesktop = () => {
 export function ChatModal({ 
   user, 
   community, 
-  theme = 'light', 
+  theme = 'light',
+  mode = 'single', 
   chatBaseUrl,
   curiaBaseUrl,
   authToken,
@@ -94,7 +95,8 @@ export function ChatModal({
       userNick: modalState.credentials.ircUsername, // Use ircUsername for nick consistency
       channelName,
       nofocus: true,
-      theme // Pass theme prop through to IRC client
+      theme, // Pass theme prop through to IRC client
+      mode // Pass mode prop through to IRC client
     });
   };
 
