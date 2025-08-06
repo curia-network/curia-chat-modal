@@ -31,10 +31,17 @@ export function ChatModal({
   chatBaseUrl,
   theme = 'light',
   mode,
+  displayMode = 'modal', // Default to 'modal' for backward compatibility
   onClose 
 }: ChatModalProps) {
   const isDesktop = useIsDesktop();
   const [isLoading, setIsLoading] = useState(true);
+
+  // Conditional behavior flags based on displayMode
+  const shouldLockScroll = displayMode === 'modal';
+  const shouldUsePortal = displayMode === 'modal';
+  const shouldShowBackdrop = displayMode === 'modal';
+  const shouldHandleEscape = displayMode === 'modal';
 
   // NO MORE API CALLS! Use pre-provisioned data instantly
   const chatUrl = useMemo(() => {
@@ -51,8 +58,10 @@ export function ChatModal({
     });
   }, [ircCredentials, channel, chatBaseUrl, theme, mode]);
 
-  // Body scroll lock and focus management when modal is open
+  // Body scroll lock and focus management when modal is open (modal mode only)
   useEffect(() => {
+    if (!shouldLockScroll) return;
+    
     // Store original overflow style
     const originalStyle = window.getComputedStyle(document.body).overflow;
     
@@ -69,10 +78,12 @@ export function ChatModal({
     return () => {
       document.body.style.overflow = originalStyle;
     };
-  }, []);
+  }, [shouldLockScroll]);
 
-  // Keyboard handling (ESC to close)
+  // Keyboard handling (ESC to close) - modal mode only
   useEffect(() => {
+    if (!shouldHandleEscape) return;
+    
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         onClose();
@@ -81,31 +92,43 @@ export function ChatModal({
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [onClose]);
+  }, [onClose, shouldHandleEscape]);
 
-  // INSTANT load - no provisioning delay!
-  return createPortal(
+  // Define the modal content structure
+  const modalContent = (
     <>
-      {/* Backdrop */}
-      <div 
-        className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 animate-in fade-in duration-200"
-        onClick={onClose}
-        onTouchMove={(e) => e.preventDefault()}
-        onWheel={(e) => e.preventDefault()}
-      />
+      {/* Backdrop - only in modal mode */}
+      {shouldShowBackdrop && (
+        <div 
+          className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 animate-in fade-in duration-200"
+          onClick={onClose}
+          onTouchMove={(e) => e.preventDefault()}
+          onWheel={(e) => e.preventDefault()}
+        />
+      )}
       
-      {/* Modal Content - Responsive Design */}
+      {/* Content Container - conditional styling based on displayMode */}
       <div 
         className={cn(
-          "fixed z-50 bg-background shadow-2xl border overscroll-contain flex flex-col focus:outline-none",
+          "bg-background shadow-2xl border overscroll-contain flex flex-col focus:outline-none",
           theme === 'dark' ? 'dark' : '',
-          styles.modalResponsive,
-          isDesktop
-            ? "rounded-r-2xl animate-in slide-in-from-left-5 fade-in-0 duration-300"
-            : "animate-in slide-in-from-bottom-4 fade-in-0 duration-300"
+          displayMode === 'modal' 
+            ? [
+                // Modal mode: fixed positioning with responsive sizing
+                "fixed z-50",
+                styles.modalResponsive,
+                isDesktop
+                  ? "rounded-r-2xl animate-in slide-in-from-left-5 fade-in-0 duration-300"
+                  : "animate-in slide-in-from-bottom-4 fade-in-0 duration-300"
+              ]
+            : [
+                // Full page mode: fill parent container
+                "w-full h-full",
+                "rounded-none" // No rounded corners for full page
+              ]
         )}
         role="dialog"
-        aria-modal="true"
+        aria-modal={displayMode === 'modal'}
         aria-label={`Chat: ${channel.name}`}
         tabIndex={-1}
       >
@@ -131,7 +154,11 @@ export function ChatModal({
           />
         </div>
       </div>
-    </>,
-    document.body
+    </>
   );
+
+  // Conditional rendering: use portal for modal mode, direct render for fullpage mode
+  return shouldUsePortal 
+    ? createPortal(modalContent, document.body)
+    : modalContent;
 }

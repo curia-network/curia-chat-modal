@@ -54,6 +54,7 @@ export interface ChatModalProps {
   chatBaseUrl?: string;           // Base URL for The Lounge (for local dev)
   theme?: 'light' | 'dark';      // Current app theme
   mode?: 'single' | 'normal';    // Channel mode or override
+  displayMode?: 'modal' | 'fullpage'; // NEW: How to render the component
   onClose: () => void;
 }
 
