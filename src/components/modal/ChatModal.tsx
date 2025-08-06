@@ -2,11 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { cn } from '../utils/cn';
-import { ChatCore } from './core/ChatCore';
-import { ChatBackdrop } from './modal/ChatBackdrop';
-import type { ChatModalProps } from '../types';
-import styles from '../styles/ChatModal.module.css';
+import { cn } from '../../utils/cn';
+import { ChatCore } from '../core/ChatCore';
+import { ChatBackdrop } from './ChatBackdrop';
+import type { ChatModalProps } from '../../types';
+import styles from '../../styles/ChatModal.module.css';
 
 const useIsDesktop = () => {
   const [isDesktop, setIsDesktop] = useState(false);
