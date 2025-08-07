@@ -68,7 +68,6 @@ export interface ChatContextType {
 
 // IRC Provisioning Types
 export interface IrcCredentials {
-  success: boolean;
   ircUsername: string;
   ircPassword: string;
   networkName: string;
