@@ -44,8 +44,6 @@ export function buildLoungeUrl({
     username: `${ircUsername}/${networkName}`,
     realname: userNick,
     join: `#${channelName}`,
-    lockchannel: 'true',
-    ...(nofocus && { nofocus: 'true' }),
     ...(theme && { theme }),
     ...(mode && { mode })
   });
